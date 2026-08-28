@@ -1,0 +1,129 @@
+import sounddevice as sd
+import scipy.io.wavfile as wav
+import speech_recognition as sr
+import random
+from googletrans import Translator
+
+micro = False
+print("-- Juego del traductor | version ingles --")
+print("- ! Número maximo de errores: 3 ! -")
+niveles_palabras ={
+    "facil": ["Hola", "Manzana", "Habitación", "Cielo", "Arbol"],
+    "medio": ["Computadora", "Ventilador", "Empezar", "Universo"],
+    "dificil": ["Amatista", "Fantasma", "Avion", "Nave espacial"],
+    "duelo": ["Ciclopentanoperhidrofenantreno", "Acido asetil salisilico", "Electroencefalografista", "Esternocleidomastoideo"]
+}
+puntos = 0
+errores = 0
+while True:
+    hacker = False
+    micro = False
+    print("Elige tu modalidad: '1' = por teclado (texto), '2' = por microfono (audio)")    
+    m = input("")
+    if m == "1":
+        print("Por teclado.")
+        print("")
+    elif m == "HACKER":
+        m = 1
+        print("Por teclado.")
+        print("")
+        hacker = True
+    else:
+        print("Por microfono.")
+        print("")
+        if m == "duelo":
+            duration = 20
+        elif m == "dificil":
+            duration == 10
+        else:
+            duration = 5
+        sample_rate = 44100
+        micro = True
+    print(f"Elige la dificultad: 'facil' 'medio' 'dificil' 'duelo'")
+    a = input("")
+    print("")
+    try:
+        palabra = random.choice(niveles_palabras[a])
+        if micro:
+            print(f"Traduce '{palabra}' al ingles.")
+        else:
+            print(f"Traduce '{palabra}' al ingles (con mayus. al principio): ")
+        traductor_google = Translator()
+        pre = traductor_google.translate(palabra, dest='en')
+        traduccion = pre.text
+        if hacker:
+            print(f"???: {traduccion}")
+    except KeyError:
+        print("Error al elegir aleatoriamente la palabra")
+
+
+    if micro and traduccion:
+        print("Habla ahora...")
+        recording = sd.rec(
+        int(duration * sample_rate), # el número de muestras a grabar
+        samplerate=sample_rate,      # tasa de muestreo
+        channels=1,                  # 1 significa grabación mono
+        dtype="int16")               # tipo de datos para las muestras grabadas
+        sd.wait()  # esperando a que termine la grabación
+
+        wav.write("output.wav", sample_rate, recording)
+        print("Interpretando audio...")
+
+        recognizer = sr.Recognizer()
+        with sr.AudioFile("output.wav") as source:
+            audio = recognizer.record(source)
+
+        try:
+            print("")
+            audio_completo = recognizer.recognize_google(audio, language="es").lower()
+            print("--> Dijiste:", audio_completo)
+            error = False
+
+        except sr.UnknownValueError:             # - si Google no pudo entender el habla debido a ruido o silencio
+            print("No se pudo reconocer el habla.")
+            audio_completo = None
+            error = True
+        except sr.RequestError as e:             # - si no hay conexión a Internet o la API no está disponible
+            print(f"Error del servicio: {e}")
+            audio_completo = None
+            error = True
+        print("")
+        if not error:
+            if audio_completo == traduccion:
+                print("")
+                print("¡Ganaste!")
+                print("+1 puntos!")
+                puntos += 1
+                print(f"Puntos: {puntos}")
+                print("")
+            else:
+                print(f"Perdiste..., era '{traduccion}'.")
+                errores += 1
+                print(f"Errores: {errores}")
+                x = random.randint(0, 3)
+                if x == 3:
+                    print("La deteccion de voz puede fallar. Si quieres, intentalo en texto")
+    elif not micro and traduccion:
+        tecle = input("")
+        if tecle == traduccion:
+            print("")
+            print("¡Ganaste!")
+            print("+1 puntos!")
+            puntos += 1
+            print(f"puntos: {puntos}")
+            print("")
+        else:
+            print(f"Perdiste..., era '{traduccion}'.")
+            errores += 1
+            print(f"Errores: {errores}")
+    if errores == 3:
+        print("Número de errores maximo alcanzado.")
+        print("Fin del juego.")
+        break
+    else:
+        print("¿Quieres salir del juego? ('y' 'n'): ")
+        exit = input("")
+        if exit == "y":
+            break
+        else:
+            print("")
