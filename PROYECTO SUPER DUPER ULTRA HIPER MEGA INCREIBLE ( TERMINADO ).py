@@ -8,7 +8,6 @@ import pygame, cv2, sys, subprocess, os, threading, easyocr, random, string
 from imageai.Detection import ObjectDetection
 from googletrans import Translator
 pygame.init()
-# M6c3
 screen = pygame.display.set_mode((1300, 800))
 pygame.display.set_caption("camara camarita")
 Clock = pygame.time.Clock()
@@ -260,7 +259,6 @@ class Decos:
     def update(self, new):
         self.img = self.imgs[new]
 cam = Camara(700, 300)
-#cam = None
 filtros = []
 filtros_disponibles = [
     "Ninguno",
@@ -331,13 +329,10 @@ while run:
             if event.key == pygame.K_r:
                 run = False
                 reiniciarse = True
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            #print(pygame.mouse.get_pos())
-            None
     mostrar()
     Clock.tick(60)
 if cam:
     cam.cerrar()
 pygame.quit()
 if reiniciarse:
-    subprocess.Popen([sys.executable, "prueba3.py"])
+    subprocess.Popen([sys.executable, "main.py"]) # va el nombre que le pongas al archivo
